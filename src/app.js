@@ -15,6 +15,32 @@ const app = express();
 //   res.send("Home Page!");
 // });
 
+//---------------Play with routes--------------------
+
+// b is optional in the route
+app.get("/a{b}c", (req, res) => {
+  res.send("This is ABC route");
+});
+
+// df+e check?
+app.get("/df", (req, res) => {
+  res.send("This is ABC route");
+});
+
+// reading params from route "/user/:101/:28"
+app.get("/user/:userid/{:age}", (req, res) => {
+  console.log(req.params); // { userid: '101', age: '28' }
+  res.send("Dynamic user page");
+});
+
+// app.get("/user", (req, res) => {
+//   // /user?userid=123&password=456 req.query { userid: '123', password: '345' }
+//   console.log(req.query);
+//   res.send(`User page`);
+// });
+
+//---------------------------------------------------
+
 app.get("/user", (req, res) => {
   res.send({
     firstName: "Santosh",
