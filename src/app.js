@@ -1,70 +1,32 @@
 const express = require("express");
+const { connectDB } = require("./config/database");
+const User = require("./models/user");
 
 const app = express();
 
-// Request handler function
-// app.use("/dashboard", (req, res) => {
-//   res.send("Dashboard Page!");
-// });
-
-// app.use("/hello", (req, res) => {
-//   res.send("Hello Page!");
-// });
-
-// app.use("/", (req, res) => {
-//   res.send("Home Page!");
-// });
-
-//---------------Play with routes--------------------
-
-// b is optional in the route
-app.get("/a{b}c", (req, res) => {
-  res.send("This is ABC route");
-});
-
-// df+e check?
-app.get("/df", (req, res) => {
-  res.send("This is ABC route");
-});
-
-// reading params from route "/user/:101/:28"
-app.get("/user/:userid/{:age}", (req, res) => {
-  console.log(req.params); // { userid: '101', age: '28' }
-  res.send("Dynamic user page");
-});
-
-// app.get("/user", (req, res) => {
-//   // /user?userid=123&password=456 req.query { userid: '123', password: '345' }
-//   console.log(req.query);
-//   res.send(`User page`);
-// });
-
-//---------------------------------------------------
-
-app.get("/user", (req, res) => {
-  res.send({
-    firstName: "Santosh",
-    lastName: "C M",
+app.use("/signup", async (_, res) => {
+  const user = new User({
+    firstName: "Mahi",
+    lastName: "Thala",
+    emailId: "mahi@mail.com",
+    password: "mahi@123",
   });
+
+  try {
+    await user.save();
+    res.send("Data saved successfully!!!!");
+  } catch (err) {
+    res.statusCode(400).send("Error while saving the data" + err.message);
+  }
 });
 
-app.post("/user", (req, res) => {
-  res.send("Data saved successfully in database!");
-});
-
-app.put("/user", (req, res) => {
-  res.send("Data updated successfully!");
-});
-
-app.delete("/user", (req, res) => {
-  res.send("Data deleted successfully!");
-});
-
-app.listen(7777);
-
-/*
-Routes order very important: Which ever the complete route matches first, it will respond to the req
-ex: here / and /dashboard
-when we go to /dashboard , if we have the / at the begining of the routes , for all the routes it will respond with / response as it matches first
-But if you put the / at the bottom of all routes , it will chec for the first perfect match and respond to that i.e /dashboard here
-*/
+connectDB()
+  .then(() => {
+    console.log("Database connection establised");
+    app.listen(7070, () => {
+      console.log("Server started succesfully!!!");
+    });
+  })
+  .catch((err) => {
+    console.log("Error in connecting to database", err);
+  });
