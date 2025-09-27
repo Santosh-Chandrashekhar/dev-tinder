@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const validator = require("validator");
 
 const userSchema = new Schema(
   {
@@ -18,11 +19,16 @@ const userSchema = new Schema(
       lowercase: true,
       unique: true,
       trim: true,
+      validate(email) {
+        if (!validator.isEmail(email)) {
+          throw new Error("Invalid email addess");
+        }
+      },
     },
     password: {
       type: String,
       required: true,
-      minLength: [8, "Must be at least 8, got {VALUE}"],
+      minLength: [8, "Must be at least 8"], // work on adding the entered pwd length
       validate(password) {
         const hasUppercase = /[A-Z]/.test(password);
         const hasLowercase = /[a-z]/.test(password);

@@ -51,17 +51,21 @@ app.get("/feed", async (req, res) => {
 });
 
 // Update the user record in db
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
   const updatingData = req.body;
   try {
-    const updatedRecord = await User.findByIdAndUpdate(
-      updatingData.userId,
-      updatingData,
-      {
-        returnDocument: "after",
-        runValidators: true,
-      }
+    const UPDATE_ALLOWED_FIELDS = ["age", "gender", "skills", "photoUrl"];
+    const isUpdateAllowd = Object.keys(updatingData).every((field) =>
+      UPDATE_ALLOWED_FIELDS.includes(field)
     );
+    if (!isUpdateAllowd) {
+      throw new Error("Update not allowed on certain fields");
+    }
+    const updatedRecord = await User.findByIdAndUpdate(userId, updatingData, {
+      returnDocument: "after",
+      runValidators: true,
+    });
     if (updatedRecord) {
       res.send(updatedRecord);
     } else {
