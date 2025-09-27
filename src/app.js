@@ -1,21 +1,53 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
 const User = require("./models/user");
+const { signUpDataValidation } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 app.use(express.json());
 
+// Signup
 app.use("/signup", async (req, res) => {
   //console.log(req.body);
   // new instance of User model
-  const userInput = req.body;
-  const user = new User(userInput);
+
   try {
+    const signUpData = req.body;
+    // vaidate the sign up data
+    signUpDataValidation(req.body);
+
+    // Encrypt the password before storing in DB
+    const hashedPwd = await bcrypt.hash(req.body.password, 10);
+
+    const user = new User({
+      ...signUpData,
+      password: hashedPwd,
+    });
+    console.log("user", user);
     await user.save();
     res.send("Data saved successfully!!!!");
   } catch (err) {
     res.status(400).send("Error while saving the data" + err.message);
+  }
+});
+
+// Login
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new Error("Invalid credentials");
+    }
+    res.send("Login Successful");
+  } catch (error) {
+    res.status(400).send("ERROR: " + error);
   }
 });
 
@@ -62,6 +94,7 @@ app.patch("/user/:userId", async (req, res) => {
     if (!isUpdateAllowd) {
       throw new Error("Update not allowed on certain fields");
     }
+
     const updatedRecord = await User.findByIdAndUpdate(userId, updatingData, {
       returnDocument: "after",
       runValidators: true,
