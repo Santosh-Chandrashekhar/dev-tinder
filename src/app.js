@@ -59,6 +59,7 @@ app.patch("/user", async (req, res) => {
       updatingData,
       {
         returnDocument: "after",
+        runValidators: true,
       }
     );
     if (updatedRecord) {
