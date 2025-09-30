@@ -3,10 +3,14 @@ const { connectDB } = require("./config/database");
 const User = require("./models/user");
 const { signUpDataValidation } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+var jwt = require("jsonwebtoken");
+var cookieParser = require("cookie-parser");
+const { userAuth } = require("./middlewares/auth");
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json()); // req body parser middleware
+app.use(cookieParser()); // cookies parser middleware
 
 // Signup
 app.use("/signup", async (req, res) => {
@@ -41,13 +45,37 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid credentials");
     }
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await user.validatePassword(password);
     if (!isValidPassword) {
       throw new Error("Invalid credentials");
     }
+
+    const token = await user.getJWT();
+    console.log(token);
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000), // cookie will be removed after 8 hours
+    });
     res.send("Login Successful");
   } catch (error) {
     res.status(400).send("ERROR: " + error);
+  }
+});
+
+app.get("/profile", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("ERROR:" + error.message);
+  }
+});
+
+app.post("/sendConnectionReq", userAuth, async (req, res, next) => {
+  try {
+    const user = req.user;
+    res.send(user.firstName + " " + "sent connection request");
+  } catch (error) {
+    res.status(400).send("ERROR: " + error.message);
   }
 });
 

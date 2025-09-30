@@ -76,6 +76,17 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ id: user._id }, "santosh123454");
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (userInputPassword) {
+  const user = this;
+  return bcrypt.compare(userInputPassword, user.password);
+};
+
 module.exports = mongoose.model("User", userSchema);
 
 // User is the model name here: When we save the data to database it will store in users collection : how mongoose work here is
