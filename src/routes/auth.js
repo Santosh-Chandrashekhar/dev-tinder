@@ -21,7 +21,7 @@ authRouter.post("/signup", async (req, res) => {
       ...signUpData,
       password: hashedPwd,
     });
-    console.log("user", user);
+    
     await user.save();
     res.send("Data saved successfully!!!!");
   } catch (err) {
